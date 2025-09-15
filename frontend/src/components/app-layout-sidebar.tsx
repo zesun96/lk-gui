@@ -19,7 +19,7 @@ const data = {
     {
       name: 'Global Workspace',
       logo: GalleryVerticalEnd,
-      subtitle: 'Coming Soon',
+      subtitle: 'Default',
     },
   ],
 }

@@ -48,10 +48,6 @@ export default function SelectMethod() {
           <CommandInput placeholder="Search methods..." />
           <CommandList>
             <CommandEmpty>No methods found.</CommandEmpty>
-            <CommandGroup heading="Reflection">
-              {/* TODO: Show error on hover of heading, instead of as an option. */}
-
-            </CommandGroup>
             <CommandSeparator />
             <CommandGroup>
             </CommandGroup>

@@ -1,6 +1,6 @@
 import './App.css'
 import AppLayout from './components/app-layout'
-import HttpClient from './components/http-client'
+import LivekitCli from './components/livekit-cli'
 import './userWorker'
 
 function App() {
@@ -8,7 +8,7 @@ function App() {
   return (
     <>
       <AppLayout>
-        <HttpClient />
+        <LivekitCli />
       </AppLayout>
     </>
   )

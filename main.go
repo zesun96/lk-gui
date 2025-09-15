@@ -49,8 +49,8 @@ func main() {
 	// 'URL' is the URL that will be loaded into the webview.
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "lk-gui",
-		Width:  1000,
-		Height: 625,
+		Width:  1280,
+		Height: 720,
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
 			Backdrop:                application.MacBackdropTranslucent,

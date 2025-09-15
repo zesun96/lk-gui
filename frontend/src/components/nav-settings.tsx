@@ -7,15 +7,11 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { IsMac } from '@/utils/platform'
-import { useWindowStore } from '@/window-store'
 import { DialogTrigger } from '@radix-ui/react-dialog'
 import { useCallback, useEffect, useState } from 'react'
-import NavSettingsDeleteDaysSlider from './nav-settings-delete-days-slider'
 import { Badge } from './ui/badge'
-import { Button } from './ui/button'
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -24,8 +20,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 
 export function NavSettings() {
-  const setHasSeenOnboarding = useWindowStore.use.setHasSeenOnboarding()
-  const setHasSeenTour = useWindowStore.use.setHasSeenTour()
 
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -108,30 +102,7 @@ export function NavSettings() {
                 </TabsList>
                 <div className="grow rounded-lg border border-border text-start overflow-scroll">
                   <TabsContent value="tab-general">
-                    <div className="flex flex-col px-4 py-1.5 space-y-6">
-                      <NavSettingsDeleteDaysSlider />
-                      <DialogClose className="flex gap-3">
-                        <Button
-                          variant={'secondary'}
-                          onClick={() => {
-                            setHasSeenOnboarding(false)
-                          }}
-                        >
-                          Restart Onboarding
-                        </Button>
-                        <Button
-                          variant={'secondary'}
-                          onClick={() => {
-                            setHasSeenTour(false)
-                          }}
-                        >
-                          Restart Tour
-                        </Button>
-                      </DialogClose>
-                    </div>
-                    <p className="px-4 py-1.5 text-xs text-muted-foreground">
-                      {/* TODO: Text */}
-                    </p>
+
                   </TabsContent>
                 </div>
               </Tabs>

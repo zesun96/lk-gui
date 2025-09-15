@@ -1,10 +1,9 @@
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { getErrorMessage } from '@/utils/utils'
 import { useWindowStore } from '@/window-store'
 import Editor, { useMonaco } from '@monaco-editor/react'
 import { WML } from '@wailsio/runtime'
-import { Bug, Lightbulb, NotepadTextDashed } from 'lucide-react'
+import { Bug } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type {
   ImperativePanelHandle,
@@ -32,7 +31,7 @@ import {
   TooltipTrigger,
 } from './ui/tooltip'
 
-export default function HttpClient() {
+export default function LivekitCli() {
   const activeRequestId = useWindowStore.use.activeRequestId()
   const requests = useWindowStore.use.requests()
   const theme = useWindowStore.use.theme()
@@ -41,9 +40,8 @@ export default function HttpClient() {
 
   const [loading, setLoading] = useState(false)
 
-  const { address, method, request, response } =
+  const { method, request, response } =
     requests[activeRequestId]
-  const setAddress = (address: string) => updateActiveRequest({ address })
   const setRequest = (request: string) => updateActiveRequest({ request })
   const setResponse = (response: string) => updateActiveRequest({ response })
 
@@ -56,10 +54,6 @@ export default function HttpClient() {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
   }, [theme])
-
-  const generateTemplate = async () => {
-    return
-  }
 
   const sendRequest = async () => {
     if (method.trim().length === 0) {
@@ -106,16 +100,6 @@ export default function HttpClient() {
       >
         <div className="grid grid-cols-1 grid-rows-[min-content_min-content_min-content_minmax(0,_1fr)_min-content] p-4 space-y-4 h-full">
           <h2 className="text-xl font-bold text-right">Request</h2>
-          <div className="flex-1">
-            <Input
-              id="input-address"
-              type="text"
-              placeholder="Enter Address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              spellCheck="false"
-            />
-          </div>
 
           <div className="grid grid-cols-[minmax(0,_1fr)_min-content] space-x-2 overflow-hidden">
             <SelectMethod />
@@ -140,21 +124,6 @@ export default function HttpClient() {
             }}
             className="input-request mb-4"
           />
-          <div>
-            <Button
-              id="generate-request-template"
-              variant="outline"
-              onClick={generateTemplate}
-            >
-              <NotepadTextDashed
-                className="-ms-1 me-2"
-                size={16}
-                strokeWidth={2}
-                aria-hidden="true"
-              />
-              Generate Request Template
-            </Button>
-          </div>
         </div>
       </ResizablePanel>
       <ResizableHandle onDoubleClick={() => reqPanelRef.current?.resize(50)} />
@@ -167,27 +136,11 @@ export default function HttpClient() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      id="suggest-feature"
-                      variant="outline"
-                      size="icon"
-                      aria-label="Suggest a feature"
-                      wml-openurl="https://grpcmd.featurebase.app"
-                    >
-                      <Lightbulb size={16} strokeWidth={2} aria-hidden="true" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent className="px-2 py-1 text-xs">
-                    Suggest a feature
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
                       id="report-bug"
                       variant="outline"
                       size="icon"
                       aria-label="Report a bug"
-                      wml-openurl="https://github.com/grpcmd/grpcmd-gui/issues"
+                      wml-openurl="https://github.com/zesun96/lk-gui/issues"
                     >
                       <Bug size={16} strokeWidth={2} aria-hidden="true" />
                     </Button>
