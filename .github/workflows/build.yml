@@ -1,0 +1,182 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+env:
+  GO_VERSION: '1.24.0'
+  NODE_VERSION: '20'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+            arch: amd64
+            extension: .exe
+            artifact-name: lk-gui-windows-amd64.exe
+          - os: macos-latest
+            platform: darwin
+            arch: amd64
+            extension: ""
+            artifact-name: lk-gui-darwin-amd64
+          - os: ubuntu-latest
+            platform: linux
+            arch: amd64
+            extension: ""
+            artifact-name: lk-gui-linux-amd64
+
+    runs-on: ${{ matrix.os }}
+    
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ env.GO_VERSION }}
+        cache: true
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install system dependencies (Linux)
+      if: matrix.platform == 'linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          pkg-config \
+          libgtk-3-dev \
+          libwebkit2gtk-4.0-dev \
+          libayatana-appindicator3-dev \
+          librsvg2-dev
+
+    - name: Install Wails CLI
+      run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+    - name: Verify Wails installation
+      run: wails3 version
+
+    - name: Install frontend dependencies
+      working-directory: frontend
+      run: npm ci
+
+    - name: Build frontend
+      working-directory: frontend
+      run: npm run build
+
+    - name: Get version
+      id: version
+      run: |
+        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/}
+        else
+          VERSION="dev-$(git rev-parse --short HEAD)"
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Building version: $VERSION"
+      shell: bash
+
+    - name: Build application
+      run: |
+        echo "Building for platform: ${{ matrix.platform }}"
+        wails3 build -platform ${{ matrix.platform }}
+
+    - name: List build output
+      run: |
+        echo "Build directory contents:"
+        ls -la ./bin/ || true
+        echo "Root directory contents:"
+        ls -la ./ | grep -E "(lk-gui|bin)" || true
+      shell: bash
+
+    - name: Prepare artifact
+      run: |
+        BINARY_NAME="lk-gui${{ matrix.extension }}"
+        ARTIFACT_NAME="${{ matrix.artifact-name }}"
+        
+        # Find the built binary file
+        if [ -f "./bin/$BINARY_NAME" ]; then
+          cp "./bin/$BINARY_NAME" "$ARTIFACT_NAME"
+        elif [ -f "./$BINARY_NAME" ]; then
+          cp "./$BINARY_NAME" "$ARTIFACT_NAME"
+        else
+          echo "Error: Binary file not found!"
+          echo "Looking for: $BINARY_NAME"
+          find . -name "*lk-gui*" -type f 2>/dev/null || true
+          exit 1
+        fi
+        
+        # Verify the file
+        if [ -f "$ARTIFACT_NAME" ]; then
+          ls -la "$ARTIFACT_NAME"
+          echo "✅ Artifact prepared: $ARTIFACT_NAME"
+        else
+          echo "❌ Failed to prepare artifact"
+          exit 1
+        fi
+      shell: bash
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.artifact-name }}
+        path: ${{ matrix.artifact-name }}
+        retention-days: 90
+        if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: ./artifacts
+
+    - name: Display downloaded artifacts
+      run: |
+        echo "Downloaded artifacts:"
+        find ./artifacts -type f -exec ls -la {} \;
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          ./artifacts/lk-gui-windows-amd64.exe/lk-gui-windows-amd64.exe
+          ./artifacts/lk-gui-darwin-amd64/lk-gui-darwin-amd64
+          ./artifacts/lk-gui-linux-amd64/lk-gui-linux-amd64
+        name: Release ${{ needs.build.outputs.version }}
+        tag_name: ${{ github.ref_name }}
+        generate_release_notes: true
+        draft: false
+        prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
