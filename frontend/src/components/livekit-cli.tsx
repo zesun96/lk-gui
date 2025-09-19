@@ -43,6 +43,7 @@ export default function LivekitCli() {
   const activeRequestId = useWindowStore.use.activeRequestId()
   const requests = useWindowStore.use.requests()
   const theme = useWindowStore.use.theme()
+  const lkCommandPath = useWindowStore.use.lkCommandPath()
   const setTheme = useWindowStore.use.setTheme()
   const updateActiveRequest = useWindowStore.use.updateActiveRequest()
 
@@ -80,6 +81,17 @@ export default function LivekitCli() {
     try {
       // 构建完整的命令
       let fullCommand = request.trim()
+
+      // 如果命令不是以绝对路径开始且不是以 'lk' 开始，则添加配置的 lk 命令路径
+      if (fullCommand && !fullCommand.startsWith('/') && !fullCommand.startsWith('C:') && !fullCommand.startsWith('lk ')) {
+        // 如果命令不是以 lk 开始，则添加 lk 命令路径
+        if (!fullCommand.startsWith('lk')) {
+          fullCommand = `${lkCommandPath} ${fullCommand}`
+        }
+      } else if (fullCommand.startsWith('lk ')) {
+        // 如果命令以 'lk ' 开始，替换为配置的路径
+        fullCommand = fullCommand.replace(/^lk /, `${lkCommandPath} `)
+      }
 
       // 如果有环境变量，添加到命令前
       const enabledEnvVars = requests[activeRequestId].params?.filter(p => p.enabled && p.key && p.value) || []
@@ -231,7 +243,18 @@ export default function LivekitCli() {
                     {(() => {
                       const enabledEnvVars = requests[activeRequestId].params?.filter(p => p.enabled && p.key && p.value) || []
                       const envString = enabledEnvVars.length > 0 ? enabledEnvVars.map(p => `${p.key}=${p.value}`).join(' ') + ' ' : ''
-                      const fullCommand = envString + (request.trim() || 'No command entered')
+
+                      let commandToShow = request.trim() || 'No command entered'
+                      // 如果命令不是以绝对路径开始且不是以 'lk' 开始，则添加配置的 lk 命令路径
+                      if (commandToShow !== 'No command entered' && !commandToShow.startsWith('/') && !commandToShow.startsWith('C:') && !commandToShow.startsWith('lk ')) {
+                        if (!commandToShow.startsWith('lk')) {
+                          commandToShow = `${lkCommandPath} ${commandToShow}`
+                        }
+                      } else if (commandToShow.startsWith('lk ')) {
+                        commandToShow = commandToShow.replace(/^lk /, `${lkCommandPath} `)
+                      }
+
+                      const fullCommand = envString + commandToShow
 
                       return (
                         <div className="text-sm font-mono bg-background/50 p-3 rounded whitespace-pre-wrap break-all">

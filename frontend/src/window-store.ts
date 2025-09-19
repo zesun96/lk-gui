@@ -85,6 +85,7 @@ export type WindowState = {
   deleteRequestAfterMs: number
   hasSeenOnboarding: boolean
   hasSeenTour: boolean
+  lkCommandPath: string
   customCommands: Array<{
     id: string
     label: string
@@ -119,6 +120,7 @@ const getInitialState = (): WindowState => {
     deleteRequestAfterMs: 604800000, // 7 days in milliseconds
     hasSeenOnboarding: false,
     hasSeenTour: true, // The end of the onboarding sets this to false to start to tour.
+    lkCommandPath: 'lk', // 默认使用系统 PATH 中的 lk 命令
     customCommands: [],
     requests: {
       [id]: {
@@ -266,6 +268,10 @@ export const useWindowStore = createSelectors(
               set((state) => {
                 state.customCommands = state.customCommands.filter(cmd => cmd.id !== id)
               }),
+            setLkCommandPath: (path: string) =>
+              set((state) => {
+                state.lkCommandPath = path
+              }),
           }
         }),
       ),
@@ -280,6 +286,8 @@ export const useWindowStore = createSelectors(
           deleteRequestAfterMs: state.deleteRequestAfterMs,
           hasSeenOnboarding: state.hasSeenOnboarding,
           hasSeenTour: state.hasSeenTour,
+          lkCommandPath: state.lkCommandPath,
+          customCommands: state.customCommands,
         }),
       },
     ),

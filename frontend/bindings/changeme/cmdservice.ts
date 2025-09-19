@@ -8,3 +8,17 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
 export function Run(cmd: string): $CancellablePromise<string> {
     return $Call.ByID(1337219506, cmd);
 }
+
+/**
+ * SelectFile 打开文件选择对话框
+ */
+export function SelectFile(): $CancellablePromise<string> {
+    return $Call.ByID(41197827);
+}
+
+/**
+ * SelectFolder 打开文件夹选择对话框并查找 lk 命令
+ */
+export function SelectFolder(): $CancellablePromise<string> {
+    return $Call.ByID(982415261);
+}
