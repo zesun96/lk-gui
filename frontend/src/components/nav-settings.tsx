@@ -1,4 +1,4 @@
-import { Cog, Settings, FolderOpen, Terminal } from 'lucide-react'
+import { Cog, Settings, FolderOpen } from 'lucide-react'
 import { Dialogs } from '@wailsio/runtime'
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
