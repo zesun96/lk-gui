@@ -85,6 +85,14 @@ export type WindowState = {
   deleteRequestAfterMs: number
   hasSeenOnboarding: boolean
   hasSeenTour: boolean
+  customCommands: Array<{
+    id: string
+    label: string
+    value: string
+    description: string
+    template: string
+    category: string
+  }>
   requests: {
     [key: string]: {
       id: string
@@ -94,6 +102,7 @@ export type WindowState = {
       methodSource: string
       request: string
       response: string
+      params: Array<{ key: string; value: string; description: string; enabled: boolean }>
       updatedAt: string
     }
   }
@@ -110,6 +119,7 @@ const getInitialState = (): WindowState => {
     deleteRequestAfterMs: 604800000, // 7 days in milliseconds
     hasSeenOnboarding: false,
     hasSeenTour: true, // The end of the onboarding sets this to false to start to tour.
+    customCommands: [],
     requests: {
       [id]: {
         id: id,
@@ -119,6 +129,7 @@ const getInitialState = (): WindowState => {
         methodSource: '',
         request: '',
         response: '',
+        params: [],
         updatedAt: new Date().toISOString(),
       },
     },
@@ -142,6 +153,7 @@ export const useWindowStore = createSelectors(
                   methodSource: '',
                   request: '',
                   response: '',
+                  params: [],
                   updatedAt: new Date().toISOString(),
                 }
                 state.sortOrder.unshift(id)
@@ -231,6 +243,28 @@ export const useWindowStore = createSelectors(
             setHasSeenTour: (seen: boolean) =>
               set((state) => {
                 state.hasSeenTour = seen
+              }),
+            addCustomCommand: (command: Omit<WindowState['customCommands'][0], 'id'>) =>
+              set((state) => {
+                const id = crypto.randomUUID()
+                state.customCommands.push({
+                  ...command,
+                  id,
+                })
+              }),
+            updateCustomCommand: (id: string, command: Partial<Omit<WindowState['customCommands'][0], 'id'>>) =>
+              set((state) => {
+                const index = state.customCommands.findIndex(cmd => cmd.id === id)
+                if (index !== -1) {
+                  state.customCommands[index] = {
+                    ...state.customCommands[index],
+                    ...command,
+                  }
+                }
+              }),
+            deleteCustomCommand: (id: string) =>
+              set((state) => {
+                state.customCommands = state.customCommands.filter(cmd => cmd.id !== id)
               }),
           }
         }),
