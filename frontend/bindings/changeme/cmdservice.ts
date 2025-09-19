@@ -10,14 +10,14 @@ export function Run(cmd: string): $CancellablePromise<string> {
 }
 
 /**
- * SelectFile 打开文件选择对话框
+ * SelectFile opens a file selection dialog
  */
 export function SelectFile(): $CancellablePromise<string> {
     return $Call.ByID(41197827);
 }
 
 /**
- * SelectFolder 打开文件夹选择对话框并查找 lk 命令
+ * SelectFolder opens a folder selection dialog and looks for lk command
  */
 export function SelectFolder(): $CancellablePromise<string> {
     return $Call.ByID(982415261);

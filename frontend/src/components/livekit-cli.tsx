@@ -79,21 +79,15 @@ export default function LivekitCli() {
     setResponse('Executing command...')
 
     try {
-      // 构建完整的命令
       let fullCommand = request.trim()
 
-      // 如果命令不是以绝对路径开始且不是以 'lk' 开始，则添加配置的 lk 命令路径
       if (fullCommand && !fullCommand.startsWith('/') && !fullCommand.startsWith('C:') && !fullCommand.startsWith('lk ')) {
-        // 如果命令不是以 lk 开始，则添加 lk 命令路径
         if (!fullCommand.startsWith('lk')) {
           fullCommand = `${lkCommandPath} ${fullCommand}`
         }
       } else if (fullCommand.startsWith('lk ')) {
-        // 如果命令以 'lk ' 开始，替换为配置的路径
         fullCommand = fullCommand.replace(/^lk /, `${lkCommandPath} `)
       }
-
-      // 如果有环境变量，添加到命令前
       const enabledEnvVars = requests[activeRequestId].params?.filter(p => p.enabled && p.key && p.value) || []
       if (enabledEnvVars.length > 0) {
         const envString = enabledEnvVars.map(p => `${p.key}=${p.value}`).join(' ')
@@ -102,7 +96,6 @@ export default function LivekitCli() {
 
       console.log('Executing command:', fullCommand)
 
-      // 调用后端执行命令
       const result = await Run(fullCommand)
       setResponse(result || 'Command executed successfully (no output)')
     } catch (error) {
@@ -215,7 +208,6 @@ export default function LivekitCli() {
               <div className="h-full flex flex-col space-y-4">
                 <h3 className="text-sm font-medium">Command Preview</h3>
                 <div className="flex-1 space-y-4">
-                  {/* 环境变量预览 */}
                   <div className="border rounded p-4 bg-muted/20">
                     <h4 className="text-sm font-medium mb-2">Environment Variables</h4>
                     {(() => {
@@ -237,7 +229,6 @@ export default function LivekitCli() {
                     })()}
                   </div>
 
-                  {/* 完整命令预览 */}
                   <div className="border rounded p-4 bg-muted/20">
                     <h4 className="text-sm font-medium mb-2">Full Command</h4>
                     {(() => {
@@ -245,7 +236,6 @@ export default function LivekitCli() {
                       const envString = enabledEnvVars.length > 0 ? enabledEnvVars.map(p => `${p.key}=${p.value}`).join(' ') + ' ' : ''
 
                       let commandToShow = request.trim() || 'No command entered'
-                      // 如果命令不是以绝对路径开始且不是以 'lk' 开始，则添加配置的 lk 命令路径
                       if (commandToShow !== 'No command entered' && !commandToShow.startsWith('/') && !commandToShow.startsWith('C:') && !commandToShow.startsWith('lk ')) {
                         if (!commandToShow.startsWith('lk')) {
                           commandToShow = `${lkCommandPath} ${commandToShow}`

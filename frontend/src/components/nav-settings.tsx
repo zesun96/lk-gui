@@ -37,26 +37,22 @@ export function NavSettings() {
   useEffect(() => {
     if (dialogOpen) {
       setTempLkPath(lkCommandPath)
-      setTestResult(null) // 重置测试结果
+      setTestResult(null)
     }
   }, [dialogOpen, lkCommandPath])
 
-  // 保存设置
   const saveSettings = () => {
     setLkCommandPath(tempLkPath.trim() || 'lk')
     setDialogOpen(false)
   }
 
-  // 重置为默认值
   const resetToDefault = () => {
     setTempLkPath('lk')
-    setTestResult(null) // 清除测试结果
+    setTestResult(null)
   }
 
-  // 浏览文件选择 lk 命令
   const browseForFile = async () => {
     try {
-      // 使用 Wails 原生文件对话框 API
       const dialog = await Dialogs.OpenFile({
         Title: 'Select LiveKit CLI Executable',
         Filters: [
@@ -80,7 +76,6 @@ export function NavSettings() {
         setTestResult(null)
         return
       } else if (dialog && typeof dialog === 'string' && dialog.trim()) {
-        // 处理返回单个字符串的情况
         console.log('Selected file path (string):', dialog)
         setTempLkPath(dialog.trim())
         setTestResult(null)
@@ -92,7 +87,6 @@ export function NavSettings() {
     } catch (error) {
       console.error('Failed to open native file dialog:', error)
 
-      // 后备方案：手动输入
       const path = prompt(
         'Please enter the full path to your LiveKit CLI executable:\n\n' +
         'Examples:\n' +
@@ -109,14 +103,12 @@ export function NavSettings() {
     }
   }
 
-  // 测试命令路径
   const testCommand = async () => {
     const commandToTest = tempLkPath.trim() || 'lk'
     setIsTesting(true)
     setTestResult(null)
 
     try {
-      // 测试命令是否可用，使用 --version 或 --help 参数
       const testCmd = `${commandToTest} --version`
       console.log('Testing command:', testCmd)
 
@@ -281,7 +273,6 @@ export function NavSettings() {
                             </code>
                           </div>
 
-                          {/* 测试结果显示 */}
                           {testResult && (
                             <div className={`rounded p-3 ${testResult.startsWith('✅')
                               ? 'bg-green-50 border border-green-200 dark:bg-green-950 dark:border-green-800'
@@ -301,7 +292,6 @@ export function NavSettings() {
                         </div>
                       </div>
 
-                      {/* Save/Cancel buttons */}
                       <div className="flex justify-end space-x-2 pt-4 border-t">
                         <Button
                           type="button"

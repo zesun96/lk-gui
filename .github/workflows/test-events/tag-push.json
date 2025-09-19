@@ -1,0 +1,16 @@
+{
+    "ref": "refs/tags/v1.0.0",
+    "ref_name": "v1.0.0",
+    "ref_type": "tag",
+    "repository": {
+        "name": "lk-gui",
+        "full_name": "yourusername/lk-gui"
+    },
+    "pusher": {
+        "name": "test-user"
+    },
+    "head_commit": {
+        "id": "abc123",
+        "message": "Release v1.0.0"
+    }
+}

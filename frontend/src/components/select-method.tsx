@@ -147,7 +147,6 @@ export default function SelectMethod() {
   const [open, setOpen] = useState<boolean>(false)
   const [showCustomManager, setShowCustomManager] = useState<boolean>(false)
 
-  // 合并预定义命令和自定义命令的处理函数
   const handleSelect = (command: typeof livekitCommands[0] | typeof customCommands[0]) => {
     updateActiveRequest({
       method: command.value,
@@ -321,10 +320,8 @@ export default function SelectMethod() {
                 ))}
               </CommandGroup>
 
-              {/* 自定义命令分组 */}
               {customCommands.length > 0 && (
                 <>
-                  {/* 按类别显示自定义命令 */}
                   {['Cloud & Authentication', 'Project Management', 'App Management', 'Room Operations', 'Testing & Tokens', 'Custom'].map(category => {
                     const commandsInCategory = customCommands.filter(cmd => cmd.category === category)
                     if (commandsInCategory.length === 0) return null
