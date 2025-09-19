@@ -9,7 +9,6 @@ import {
 } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 import { useShallow } from 'zustand/react/shallow'
-import debounce from './utils/debounce'
 
 // START: Code modified from: https://zustand.docs.pmnd.rs/guides/auto-generating-selectors
 type WithSelectors<S> = S extends { getState: () => infer T }
@@ -40,40 +39,41 @@ const createSelectors = <S extends UseBoundStore<StoreApi<object>>>(
 // Flag to prevent unnecessary store rehydration when modifications are from the client.
 let isWritingConfigFromClient = false
 
-// @ts-ignore
-const debouncedSetItem = debounce(async (key: string, value: string) => {
-  // await SetItem(key, value)
-}, 1000)
-// @ts-ignore
-const debouncedRemoveItem = debounce(async (key: string) => {
-  // await RemoveItem(key)
-}, 1000)
-
 // Custom storage object.
 const storage: PersistStorage<Partial<WindowState>> = {
   getItem: async (name) => {
-    const storageValue = JSON.parse("") as StorageValue<
-      Partial<WindowState>
-    >
-    return storageValue
+    try {
+      const value = localStorage.getItem(name)
+      if (value) {
+        return JSON.parse(value) as StorageValue<Partial<WindowState>>
+      }
+      return null
+    } catch (error) {
+      console.error('Failed to get item from localStorage:', error)
+      return null
+    }
   },
   setItem: async (name, value) => {
-    isWritingConfigFromClient = true
-    // TODO: If multiple stores use this storage, make sure there is a debounce function for each unique name.
-    await debouncedSetItem(name, JSON.stringify(value, null, 2))
-    setTimeout(() => {
-      isWritingConfigFromClient = false
-      // Wait 2000ms to avoid fsnotify callbacks from running.
-    }, 2000)
+    try {
+      isWritingConfigFromClient = true
+      localStorage.setItem(name, JSON.stringify(value))
+      setTimeout(() => {
+        isWritingConfigFromClient = false
+      }, 100)
+    } catch (error) {
+      console.error('Failed to set item in localStorage:', error)
+    }
   },
   removeItem: async (name) => {
-    isWritingConfigFromClient = true
-    // TODO: If multiple stores use this storage, make sure there is a debounce function for each unique name.
-    await debouncedRemoveItem(name)
-    setTimeout(() => {
-      isWritingConfigFromClient = false
-      // Wait 2000ms to avoid fsnotify callbacks from running.
-    }, 2000)
+    try {
+      isWritingConfigFromClient = true
+      localStorage.removeItem(name)
+      setTimeout(() => {
+        isWritingConfigFromClient = false
+      }, 100)
+    } catch (error) {
+      console.error('Failed to remove item from localStorage:', error)
+    }
   },
 }
 
