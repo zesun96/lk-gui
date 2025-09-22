@@ -1,5 +1,4 @@
 linters-settings:
-linters-settings:
   gocyclo:
     min-complexity: 15
   dupl:
