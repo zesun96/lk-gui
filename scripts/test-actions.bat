@@ -74,30 +74,7 @@ if %ERRORLEVEL% NEQ 0 (
 )
 wails3 version
 
-REM Step 3: Go module checks
-echo.
-echo 🔄 Running Go module checks...
-go mod verify
-if %ERRORLEVEL% NEQ 0 (
-    echo ❌ Go module verification failed
-    pause
-    exit /b 1
-)
-go mod tidy
-echo ✅ Go modules verified
-
-REM Step 4: Go tests
-echo.
-echo 🔄 Running Go tests...
-go test -v ./...
-if %ERRORLEVEL% NEQ 0 (
-    echo ❌ Go tests failed
-    pause
-    exit /b 1
-)
-echo ✅ Go tests passed
-
-REM Step 5: Frontend dependencies
+REM Step 3: Frontend dependencies
 echo.
 echo 🔄 Installing frontend dependencies...
 cd frontend
@@ -109,7 +86,7 @@ if %ERRORLEVEL% NEQ 0 (
 )
 echo ✅ Frontend dependencies installed
 
-REM Step 6: Frontend checks
+REM Step 4: Frontend checks
 echo.
 echo 🔄 Running frontend checks...
 
@@ -142,7 +119,45 @@ echo ✅ Frontend build successful
 
 cd ..
 
-REM Step 7: Application build
+REM Step 5: Go module checks
+echo.
+echo 🔄 Running Go module checks...
+go mod verify
+if %ERRORLEVEL% NEQ 0 (
+    echo ❌ Go module verification failed
+    pause
+    exit /b 1
+)
+go mod tidy
+echo ✅ Go modules verified
+
+REM Step 6: golangci-lint (if available)
+echo.
+echo 🔄 Running golangci-lint (if available)...
+golangci-lint --version >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    golangci-lint run
+    if %ERRORLEVEL% EQU 0 (
+        echo ✅ golangci-lint passed
+    ) else (
+        echo ⚠️ golangci-lint found issues
+    )
+) else (
+    echo ⚠️ golangci-lint not installed, skipping
+)
+
+REM Step 7: Go tests
+echo.
+echo 🔄 Running Go tests...
+go test -v ./...
+if %ERRORLEVEL% NEQ 0 (
+    echo ❌ Go tests failed
+    pause
+    exit /b 1
+)
+echo ✅ Go tests passed
+
+REM Step 8: Application build
 echo.
 echo 🔄 Building application...
 wails3 task windows:build
@@ -159,7 +174,7 @@ if exist "bin" (
     dir bin
 )
 
-REM Step 7: Security scans (simplified)
+REM Step 9: Security scans (simplified)
 echo.
 echo 🔄 Running basic security scans...
 

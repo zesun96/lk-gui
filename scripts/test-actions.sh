@@ -82,22 +82,7 @@ else
     success "Wails CLI installed"
 fi
 
-# Step 3: Go module checks
-step "Running Go module checks..."
-go mod verify
-go mod tidy
-success "Go modules verified"
-
-# Step 4: Go tests
-step "Running Go tests..."
-if go test -v ./...; then
-    success "Go tests passed"
-else
-    error "Go tests failed"
-    exit 1
-fi
-
-# Step 5: Frontend dependencies
+# Step 3: Frontend dependencies
 step "Installing frontend dependencies..."
 cd frontend
 if npm ci; then
@@ -107,7 +92,7 @@ else
     exit 1
 fi
 
-# Step 6: Frontend checks
+# Step 4: Frontend checks
 step "Running frontend checks..."
 
 # Format check
@@ -136,7 +121,34 @@ fi
 
 cd ..
 
-# Step 7: Application build
+# Step 5: Go module checks
+step "Running Go module checks..."
+go mod verify
+go mod tidy
+success "Go modules verified"
+
+# Step 6: golangci-lint (if available)
+step "Running golangci-lint (if available)..."
+if command -v golangci-lint &> /dev/null; then
+    if golangci-lint run; then
+        success "golangci-lint passed"
+    else
+        warning "golangci-lint found issues"
+    fi
+else
+    warning "golangci-lint not installed, skipping"
+fi
+
+# Step 7: Go tests
+step "Running Go tests..."
+if go test -v ./...; then
+    success "Go tests passed"
+else
+    error "Go tests failed"
+    exit 1
+fi
+
+# Step 8: Application build
 step "Building application..."
 if wails3 task $(go env GOOS):build; then
     success "Application build successful"
@@ -151,7 +163,7 @@ else
     exit 1
 fi
 
-# Step 8: Security scans (simplified)
+# Step 9: Security scans (simplified)
 step "Running basic security scans..."
 
 # Check for govulncheck

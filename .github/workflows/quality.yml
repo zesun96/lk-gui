@@ -31,6 +31,20 @@ jobs:
       working-directory: frontend
       run: npm ci
 
+    - name: Run frontend linting and formatting check
+      working-directory: frontend
+      run: |
+        npm run format
+        git diff --exit-code
+
+    - name: Check for TypeScript errors
+      working-directory: frontend
+      run: npx tsc --noEmit
+
+    - name: Build frontend
+      working-directory: frontend
+      run: npm run build
+
     - name: Run Go module verification
       run: |
         go mod verify
@@ -45,17 +59,3 @@ jobs:
 
     - name: Run Go tests
       run: go test -v ./...
-
-    - name: Run frontend linting and formatting check
-      working-directory: frontend
-      run: |
-        npm run format
-        git diff --exit-code
-
-    - name: Build frontend
-      working-directory: frontend
-      run: npm run build
-
-    - name: Check for TypeScript errors
-      working-directory: frontend
-      run: npx tsc --noEmit
