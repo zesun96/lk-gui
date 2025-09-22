@@ -1,12 +1,8 @@
 linters-settings:
   govet:
-    check-shadowing: true
-  golint:
-    min-confidence: 0
+    shadow: true
   gocyclo:
     min-complexity: 15
-  maligned:
-    suggest-new: true
   dupl:
     threshold: 100
   goconst:
@@ -47,7 +43,6 @@ linters:
     - test
     - unused
   disable:
-    - maligned
     - interfacer
     - scopelint
   enable:
@@ -84,13 +79,21 @@ issues:
     - path: main\.go
       linters:
         - gochecknoinits
+    - path: vendor/
+      linters:
+        - all
+    - path: frontend/
+      linters:
+        - all
+    - path: build/
+      linters:
+        - all
+    - path: docs/
+      linters:
+        - all
+    - path: ".*\.pb\.go$"
+      linters:
+        - all
 
 run:
   timeout: 5m
-  skip-dirs:
-    - vendor
-    - frontend
-    - build
-    - docs
-  skip-files:
-    - ".*\\.pb\\.go$"

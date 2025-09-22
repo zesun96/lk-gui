@@ -56,7 +56,7 @@ This project uses GitHub Actions for automated building and testing:
 - **Code Quality**: Runs Go and frontend linting/testing
 - **Security**: Performs security scans and dependency checks
 
-See [.github/README.md](.github/README.md) for detailed workflow documentation.
+See [.github/use.md](.github/use.md) for detailed workflow documentation.
 
 ## License
 

@@ -138,7 +138,7 @@ cd ..
 
 # Step 7: Application build
 step "Building application..."
-if wails3 build -platform $(go env GOOS); then
+if wails3 task $(go env GOOS):build; then
     success "Application build successful"
     
     # Check build output

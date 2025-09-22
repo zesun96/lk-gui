@@ -145,7 +145,7 @@ cd ..
 REM Step 7: Application build
 echo.
 echo 🔄 Building application...
-wails3 build -platform windows
+wails3 task windows:build
 if %ERRORLEVEL% NEQ 0 (
     echo ❌ Application build failed
     pause

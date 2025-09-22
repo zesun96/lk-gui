@@ -66,9 +66,19 @@ jobs:
           build-essential \
           pkg-config \
           libgtk-3-dev \
-          libwebkit2gtk-4.0-dev \
-          libayatana-appindicator3-dev \
           librsvg2-dev
+        
+        # Install WebKit2GTK with fallback for different Ubuntu versions
+        if ! sudo apt-get install -y libwebkit2gtk-4.1-dev; then
+          echo "libwebkit2gtk-4.1-dev not found, trying libwebkit2gtk-4.0-dev"
+          sudo apt-get install -y libwebkit2gtk-4.0-dev
+        fi
+        
+        # Install AppIndicator with fallback
+        if ! sudo apt-get install -y libayatana-appindicator3-dev; then
+          echo "libayatana-appindicator3-dev not found, trying libappindicator3-dev"
+          sudo apt-get install -y libappindicator3-dev
+        fi
 
     - name: Install Wails CLI
       run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
@@ -99,7 +109,7 @@ jobs:
     - name: Build application
       run: |
         echo "Building for platform: ${{ matrix.platform }}"
-        wails3 build -platform ${{ matrix.platform }}
+        wails3 task ${{ matrix.platform }}:build
 
     - name: List build output
       run: |
