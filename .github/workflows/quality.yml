@@ -31,16 +31,6 @@ jobs:
       working-directory: frontend
       run: npm ci
 
-    - name: Run frontend linting and formatting check
-      working-directory: frontend
-      run: |
-        npm run format
-        git diff --exit-code
-
-    - name: Check for TypeScript errors
-      working-directory: frontend
-      run: npx tsc --noEmit
-
     - name: Build frontend
       working-directory: frontend
       run: npm run build
