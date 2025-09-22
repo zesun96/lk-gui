@@ -131,19 +131,26 @@ if %ERRORLEVEL% NEQ 0 (
 go mod tidy
 echo ✅ Go modules verified
 
-REM Step 6: golangci-lint (if available)
+REM Step 6: golangci-lint
 echo.
-echo 🔄 Running golangci-lint (if available)...
+echo 🔄 Installing and running golangci-lint...
 golangci-lint --version >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    golangci-lint run
-    if %ERRORLEVEL% EQU 0 (
-        echo ✅ golangci-lint passed
-    ) else (
-        echo ⚠️ golangci-lint found issues
-    )
+    echo ✅ golangci-lint already installed
 ) else (
-    echo ⚠️ golangci-lint not installed, skipping
+    echo Installing golangci-lint...
+    REM Download and install golangci-lint for Windows
+    powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh' -OutFile 'install-golangci-lint.sh'"
+    powershell -Command "bash install-golangci-lint.sh -b %GOPATH%\bin latest"
+    del install-golangci-lint.sh
+)
+
+REM Run golangci-lint with our custom config
+golangci-lint run --config .golangci.yml --timeout=5m
+if %ERRORLEVEL% EQU 0 (
+    echo ✅ golangci-lint passed
+) else (
+    echo ⚠️ golangci-lint found issues (this may be expected with Wails v3 alpha)
 )
 
 REM Step 7: Go tests

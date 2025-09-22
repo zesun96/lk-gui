@@ -37,7 +37,24 @@ Local testing scripts that simulate the GitHub Actions workflow steps.
 
 **Problem:** This error occurs when golangci-lint runs before the frontend is built, causing the `//go:embed all:frontend/dist` directive in main.go to fail.
 
-**Solution:** Ensure the frontend is built before running any Go linting or tests. The scripts in this directory follow the correct order to prevent this issue.
+**Root Cause:** 
+- main.go uses `//go:embed all:frontend/dist` to embed frontend assets
+- golangci-lint's typecheck runs during Go analysis
+- If `frontend/dist` doesn't exist, the embed directive fails
+
+**Solution:** Ensure the frontend is built before running any Go linting or tests. Both GitHub Actions workflow and local test scripts have been fixed to follow the correct order:
+
+1. **Install frontend dependencies**
+2. **Build frontend** → Creates `frontend/dist`
+3. **Run Go linting** → Now `//go:embed` can find the files
+
+### Configuration Files Added
+
+**`.golangci.yml`** - Custom golangci-lint configuration that:
+- Excludes auto-generated `frontend/bindings` directory
+- Uses modern linters (replaced deprecated `gomnd` with `mnd`)
+- Configures appropriate timeout and line length limits
+- Handles Wails v3 alpha compatibility issues
 
 ### Running from Wrong Directory
 
@@ -59,4 +76,22 @@ cd /path/to/lk-gui/scripts
 - Node.js 20+
 - npm
 - Wails CLI v3
-- golangci-lint (optional, for local linting)
+- golangci-lint (auto-installed by scripts if missing)
+
+## Testing GitHub Actions Locally
+
+Before pushing to GitHub, run the local test scripts to simulate the CI/CD pipeline:
+
+```bash
+# On Linux/macOS
+./scripts/test-actions.sh
+
+# On Windows
+.\scripts\test-actions.bat
+```
+
+These scripts will:
+- Verify your environment setup
+- Install missing tools (Wails CLI, golangci-lint)
+- Run the exact same steps as GitHub Actions
+- Report any issues before you push code

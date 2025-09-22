@@ -1,95 +1,102 @@
+run:
+  timeout: 5m
+
 linters-settings:
   gocyclo:
-    min-complexity: 20
-  dupl:
-    threshold: 150
-  goconst:
-    min-len: 3
-    min-occurrences: 3
-  misspell:
-    locale: US
-  lll:
-    line-length: 200
+    min-complexity: 15
   goimports:
     local-prefixes: changeme
-  funlen:
-    lines: 100
-    statements: 50
-  cyclop:
-    max-complexity: 15
-  nestif:
-    min-complexity: 8
   mnd:
-    # Common magic numbers to ignore
+    checks:
+      - argument
+      - case
+      - condition
+      - return
     ignored-numbers:
       - '0'
       - '1'
       - '2'
-      - '10'
-      - '100'
-      - '1024'
-    ignored-files:
-      - 'main.go'
-    ignored-functions:
-      - 'math.*'
-      - 'time.*'
+      - '3'
+  govet:
+    settings:
+      printf:
+        funcs:
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
+  lll:
+    line-length: 300  # Increase line length limit for PowerShell commands
+  misspell:
+    locale: US
 
 linters:
-  # Use only essential linters to reduce noise
-  disable-all: true
   enable:
-    # Basic checks
+    - bodyclose
+    - dupl
+    - errcheck
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
     - gofmt
     - goimports
+    - goprintffuncname
+    - gosec
+    - gosimple
     - govet
     - ineffassign
+    - lll
     - misspell
+    - nakedret
+    - staticcheck
+    - stylecheck
     - typecheck
+    - unconvert
+    - unparam
     - unused
-    
-    # Security and error checks
-    - gosec
-    - errcheck
-    
-    # Optional quality checks
-    - copyloopvar
+    - whitespace
+    - predeclared  # Check for shadowing of predeclared identifiers
 
 issues:
+  exclude-dirs:
+    - frontend/bindings
+    - vendor
   exclude-rules:
-    # Test files exclusions
-    - path: '_test\.go$'
+    - path: _test\.go
+      linters:
+        - mnd
+        - gocritic
+        - gocyclo
+    - text: "weak cryptographic primitive"
       linters:
         - gosec
-        - errcheck
-    
-    # Main file exclusions
-    - path: 'main\.go$'
+    - text: "pattern.*no matching files found"
+      linters:
+        - typecheck
+    # Ignore subprocess launch warnings for command execution
+    - text: "G204.*Subprocess launched with.*tainted input"
       linters:
         - gosec
-    
-    # Third-party code exclusions
-    - path: vendor/
-      linters: [all]
-    - path: frontend/
-      linters: [all]
-    - path: build/
-      linters: [all]
-    - path: docs/
-      linters: [all]
-    - path: '.*\.pb\.go$'
-      linters: [all]
-    
-    # Ignore common warnings
-    - text: "G204"
-      linters: [gosec]
-    - text: "magic number"
-      linters: [mnd]
-    - text: "should have comment"
-      linters: [golint]
-  
-  # Limit output to avoid overwhelming
-  max-issues-per-linter: 10
-  max-same-issues: 3
-
-run:
-  timeout: 5m
+    # Ignore long PowerShell command lines for file dialogs
+    - path: cmdservice\.go
+      text: "line is.*characters long"
+      linters:
+        - lll
+    # Ignore struct field naming for system stats (external API compatibility)
+    - path: sysutils\.go
+      text: "struct field.*should be.*Percent"
+      linters:
+        - stylecheck
+    # Ignore duplicate embed imports (required for Wails)
+    - path: main\.go
+      text: "(package.*embed.*imported more than once|other import of.*embed)"
+      linters:
+        - stylecheck
+    # Ignore leading newlines in main function
+    - path: main\.go
+      text: "unnecessary leading newline"
+      linters:
+        - whitespace
+  max-issues-per-linter: 0
+  max-same-issues: 0

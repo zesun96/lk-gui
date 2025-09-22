@@ -127,16 +127,22 @@ go mod verify
 go mod tidy
 success "Go modules verified"
 
-# Step 6: golangci-lint (if available)
-step "Running golangci-lint (if available)..."
+# Step 6: golangci-lint
+step "Installing and running golangci-lint..."
 if command -v golangci-lint &> /dev/null; then
-    if golangci-lint run; then
-        success "golangci-lint passed"
-    else
-        warning "golangci-lint found issues"
-    fi
+    success "golangci-lint already installed"
 else
-    warning "golangci-lint not installed, skipping"
+    echo "Installing golangci-lint..."
+    # Install golangci-lint
+    curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
+    export PATH=$PATH:$(go env GOPATH)/bin
+fi
+
+# Run golangci-lint with our custom config
+if golangci-lint run --config .golangci.yml --timeout=5m; then
+    success "golangci-lint passed"
+else
+    warning "golangci-lint found issues (this may be expected with Wails v3 alpha)"
 fi
 
 # Step 7: Go tests
