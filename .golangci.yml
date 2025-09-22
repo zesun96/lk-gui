@@ -1,6 +1,5 @@
 linters-settings:
-  govet:
-    shadow: true
+linters-settings:
   gocyclo:
     min-complexity: 15
   dupl:
@@ -63,6 +62,7 @@ linters:
     - noctx
     - nolintlint
     - rowserrcheck
+    - shadow
     - sqlclosecheck
     - typecheck
     - unconvert
