@@ -159,6 +159,33 @@ if exist "bin" (
     dir bin
 )
 
+REM Step 7: Security scans (simplified)
+echo.
+echo 🔄 Running basic security scans...
+
+REM Check for govulncheck
+echo Installing govulncheck...
+go install golang.org/x/vuln/cmd/govulncheck@latest
+govulncheck ./...
+if %ERRORLEVEL% EQU 0 (
+    echo ✅ govulncheck passed - no known vulnerabilities found
+) else (
+    echo ⚠️ govulncheck found potential vulnerabilities
+)
+
+REM Check npm audit if frontend exists
+if exist "frontend" (
+    echo Running npm audit...
+    cd frontend
+    npm audit --audit-level=high
+    if %ERRORLEVEL% EQU 0 (
+        echo ✅ npm audit passed
+    ) else (
+        echo ⚠️ npm audit found high-level vulnerabilities
+    )
+    cd ..
+)
+
 REM Step 8: golangci-lint (if available)
 echo.
 echo 🔄 Running golangci-lint (if available)...

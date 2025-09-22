@@ -71,12 +71,12 @@ linters:
 
 issues:
   exclude-rules:
-    - path: _test\.go
+    - path: '_test\.go$'
       linters:
         - gomnd
         - funlen
         - gocyclo
-    - path: main\.go
+    - path: 'main\.go$'
       linters:
         - gochecknoinits
     - path: vendor/
@@ -91,7 +91,7 @@ issues:
     - path: docs/
       linters:
         - all
-    - path: ".*\.pb\.go$"
+    - path: '.*\.pb\.go$'
       linters:
         - all
 

@@ -151,7 +151,31 @@ else
     exit 1
 fi
 
-# Step 8: golangci-lint (if available)
+# Step 8: Security scans (simplified)
+step "Running basic security scans..."
+
+# Check for govulncheck
+echo "Installing govulncheck..."
+go install golang.org/x/vuln/cmd/govulncheck@latest
+if govulncheck ./...; then
+    success "govulncheck passed - no known vulnerabilities found"
+else
+    warning "govulncheck found potential vulnerabilities"
+fi
+
+# Check npm audit if frontend exists
+if [ -d "frontend" ]; then
+    echo "Running npm audit..."
+    cd frontend
+    if npm audit --audit-level=high; then
+        success "npm audit passed"
+    else
+        warning "npm audit found high-level vulnerabilities"
+    fi
+    cd ..
+fi
+
+# Step 9: golangci-lint (if available)
 step "Running golangci-lint (if available)..."
 if command -v golangci-lint &> /dev/null; then
     if golangci-lint run; then
