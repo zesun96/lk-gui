@@ -45,7 +45,7 @@ func main() {
 	// Create a new window with the necessary options.
 	// 'Title' is the title of the window.
 	// 'Mac' options tailor the window when running on macOS.
-	// 'BackgroundColour' is the background colour of the window.
+	// 'BackgroundColour' is the background color of the window.
 	// 'URL' is the URL that will be loaded into the webview.
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "lk-gui",

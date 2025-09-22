@@ -1,7 +1,95 @@
-version: "2"
+linters-settings:
+  gocyclo:
+    min-complexity: 20
+  dupl:
+    threshold: 150
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+  misspell:
+    locale: US
+  lll:
+    line-length: 200
+  goimports:
+    local-prefixes: changeme
+  funlen:
+    lines: 100
+    statements: 50
+  cyclop:
+    max-complexity: 15
+  nestif:
+    min-complexity: 8
+  mnd:
+    # Common magic numbers to ignore
+    ignored-numbers:
+      - '0'
+      - '1'
+      - '2'
+      - '10'
+      - '100'
+      - '1024'
+    ignored-files:
+      - 'main.go'
+    ignored-functions:
+      - 'math.*'
+      - 'time.*'
 
-output:
-  show-stats: true
-  sort-order:
-    - file
-    - linter
+linters:
+  # Use only essential linters to reduce noise
+  disable-all: true
+  enable:
+    # Basic checks
+    - gofmt
+    - goimports
+    - govet
+    - ineffassign
+    - misspell
+    - typecheck
+    - unused
+    
+    # Security and error checks
+    - gosec
+    - errcheck
+    
+    # Optional quality checks
+    - copyloopvar
+
+issues:
+  exclude-rules:
+    # Test files exclusions
+    - path: '_test\.go$'
+      linters:
+        - gosec
+        - errcheck
+    
+    # Main file exclusions
+    - path: 'main\.go$'
+      linters:
+        - gosec
+    
+    # Third-party code exclusions
+    - path: vendor/
+      linters: [all]
+    - path: frontend/
+      linters: [all]
+    - path: build/
+      linters: [all]
+    - path: docs/
+      linters: [all]
+    - path: '.*\.pb\.go$'
+      linters: [all]
+    
+    # Ignore common warnings
+    - text: "G204"
+      linters: [gosec]
+    - text: "magic number"
+      linters: [mnd]
+    - text: "should have comment"
+      linters: [golint]
+  
+  # Limit output to avoid overwhelming
+  max-issues-per-linter: 10
+  max-same-issues: 3
+
+run:
+  timeout: 5m
