@@ -45,7 +45,7 @@ jobs:
       uses: golangci/golangci-lint-action@v6
       with:
         version: latest
-        args: --timeout=5m
+        args: --config .golangci.yml --timeout=5m
 
     - name: Run Go tests
       run: go test -v ./...

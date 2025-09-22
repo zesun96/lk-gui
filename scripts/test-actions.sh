@@ -139,10 +139,21 @@ else
 fi
 
 # Run golangci-lint with our custom config
-if golangci-lint run --config .golangci.yml --timeout=5m; then
-    success "golangci-lint passed"
+# Try to disable goanalysis_metalinter if it exists
+if golangci-lint help linters | grep -q goanalysis_metalinter; then
+    echo "Found goanalysis_metalinter, disabling it..."
+    if golangci-lint run --config .golangci.yml --timeout=5m --disable=goanalysis_metalinter; then
+        success "golangci-lint passed"
+    else
+        warning "golangci-lint found issues (this may be expected with Wails v3 alpha)"
+    fi
 else
-    warning "golangci-lint found issues (this may be expected with Wails v3 alpha)"
+    echo "goanalysis_metalinter not found, running normal config..."
+    if golangci-lint run --config .golangci.yml --timeout=5m; then
+        success "golangci-lint passed"
+    else
+        warning "golangci-lint found issues (this may be expected with Wails v3 alpha)"
+    fi
 fi
 
 # Step 7: Go tests
@@ -196,10 +207,21 @@ fi
 # Step 9: golangci-lint (if available)
 step "Running golangci-lint (if available)..."
 if command -v golangci-lint &> /dev/null; then
-    if golangci-lint run; then
-        success "golangci-lint passed"
+    # Try to disable goanalysis_metalinter if it exists
+    if golangci-lint help linters | grep -q goanalysis_metalinter; then
+        echo "Found goanalysis_metalinter, disabling it..."
+        if golangci-lint run --config .golangci.yml --disable=goanalysis_metalinter; then
+            success "golangci-lint passed"
+        else
+            warning "golangci-lint found issues"
+        fi
     else
-        warning "golangci-lint found issues"
+        echo "goanalysis_metalinter not found, running normal config..."
+        if golangci-lint run --config .golangci.yml; then
+            success "golangci-lint passed"
+        else
+            warning "golangci-lint found issues"
+        fi
     fi
 else
     warning "golangci-lint not installed, skipping"

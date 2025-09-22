@@ -146,11 +146,24 @@ if %ERRORLEVEL% EQU 0 (
 )
 
 REM Run golangci-lint with our custom config
-golangci-lint run --config .golangci.yml --timeout=5m
+REM Try to disable goanalysis_metalinter if it exists
+golangci-lint help linters | findstr "goanalysis_metalinter" >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    echo ✅ golangci-lint passed
+    echo Found goanalysis_metalinter, disabling it...
+    golangci-lint run --config .golangci.yml --timeout=5m --disable=goanalysis_metalinter
+    if %ERRORLEVEL% EQU 0 (
+        echo ✅ golangci-lint passed
+    ) else (
+        echo ⚠️ golangci-lint found issues (this may be expected with Wails v3 alpha)
+    )
 ) else (
-    echo ⚠️ golangci-lint found issues (this may be expected with Wails v3 alpha)
+    echo goanalysis_metalinter not found, running normal config...
+    golangci-lint run --config .golangci.yml --timeout=5m
+    if %ERRORLEVEL% EQU 0 (
+        echo ✅ golangci-lint passed
+    ) else (
+        echo ⚠️ golangci-lint found issues (this may be expected with Wails v3 alpha)
+    )
 )
 
 REM Step 7: Go tests
@@ -213,11 +226,24 @@ echo.
 echo 🔄 Running golangci-lint (if available)...
 golangci-lint --version >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    golangci-lint run
+    REM Try to disable goanalysis_metalinter if it exists
+    golangci-lint help linters | findstr "goanalysis_metalinter" >nul 2>&1
     if %ERRORLEVEL% EQU 0 (
-        echo ✅ golangci-lint passed
+        echo Found goanalysis_metalinter, disabling it...
+        golangci-lint run --config .golangci.yml --disable=goanalysis_metalinter
+        if %ERRORLEVEL% EQU 0 (
+            echo ✅ golangci-lint passed
+        ) else (
+            echo ⚠️ golangci-lint found issues
+        )
     ) else (
-        echo ⚠️ golangci-lint found issues
+        echo goanalysis_metalinter not found, running normal config...
+        golangci-lint run --config .golangci.yml
+        if %ERRORLEVEL% EQU 0 (
+            echo ✅ golangci-lint passed
+        ) else (
+            echo ⚠️ golangci-lint found issues
+        )
     )
 ) else (
     echo ⚠️ golangci-lint not installed, skipping

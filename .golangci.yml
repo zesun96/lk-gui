@@ -74,6 +74,15 @@ issues:
     - text: "pattern.*no matching files found"
       linters:
         - typecheck
+    # Ignore Wails v3 internal package issues
+    - text: "could not load export data.*wails.*internal"
+      linters:
+        - typecheck
+        - goanalysis_metalinter
+    - text: "no export data for.*wails.*internal"
+      linters:
+        - typecheck
+        - goanalysis_metalinter
     # Ignore subprocess launch warnings for command execution
     - text: "G204.*Subprocess launched with.*tainted input"
       linters:
