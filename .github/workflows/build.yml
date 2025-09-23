@@ -109,7 +109,16 @@ jobs:
     - name: Build application
       run: |
         echo "Building for platform: ${{ matrix.platform }}"
+        echo "PRODUCTION environment variable: $PRODUCTION"
+        if [ "$PRODUCTION" = "true" ]; then
+          echo "🚀 Building production release (no console window on Windows)"
+        else
+          echo "🔧 Building development version (with console for debugging)"
+        fi
         wails3 task ${{ matrix.platform }}:build
+      env:
+        # Set PRODUCTION=true for release builds to enable windowsgui flag on Windows
+        PRODUCTION: ${{ startsWith(github.ref, 'refs/tags/') && 'true' || 'false' }}
 
     - name: List build output
       run: |

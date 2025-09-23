@@ -167,6 +167,9 @@ fi
 
 # Step 8: Application build
 step "Building application..."
+# Set PRODUCTION=false for development testing
+export PRODUCTION=false
+echo "Building with PRODUCTION=$PRODUCTION"
 if wails3 task $(go env GOOS):build; then
     success "Application build successful"
     

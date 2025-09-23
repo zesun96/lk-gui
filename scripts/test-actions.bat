@@ -180,6 +180,9 @@ echo ✅ Go tests passed
 REM Step 8: Application build
 echo.
 echo 🔄 Building application...
+REM Set PRODUCTION=false for development testing
+set PRODUCTION=false
+echo Building with PRODUCTION=%PRODUCTION%
 wails3 task windows:build
 if %ERRORLEVEL% NEQ 0 (
     echo ❌ Application build failed

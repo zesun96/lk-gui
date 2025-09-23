@@ -8,10 +8,35 @@ This directory contains utility scripts for development and testing.
 
 Local testing scripts that simulate the GitHub Actions workflow steps.
 
+### fix-golangci-lint.sh / fix-golangci-lint.ps1
+
+Specialized scripts to fix golangci-lint compatibility issues with Wails v3 alpha version.
+
+### test-env-vars.ps1
+
+Windows-specific script to test environment variable handling and verify cross-platform compatibility.
+
+### CHANGELOG.md
+
+Documents important changes and fixes to the build and test scripts.
+
 **Usage:**
 
 - Linux/macOS: `./scripts/test-actions.sh`
 - Windows: `.\scripts\test-actions.bat`
+
+**Fix golangci-lint issues:**
+
+- Linux/macOS: `./scripts/fix-golangci-lint.sh`
+- Windows: `.\scripts\fix-golangci-lint.ps1`
+
+**Test build modes (Windows only):**
+
+- Windows: `.\scripts\test-build-modes.ps1`
+
+**Test environment variables (Windows only):**
+
+- Windows: `.\scripts\test-env-vars.ps1`
 
 **Important:** These scripts must be run from the project root directory.
 

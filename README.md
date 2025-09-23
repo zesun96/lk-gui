@@ -127,6 +127,33 @@ This will simulate the CI/CD pipeline steps locally to catch issues early.
 
 To build a redistributable, production mode package, use `wails3 build`.
 
+### Build Modes
+
+**Production Build (No Console Window on Windows):**
+```bash
+# For Windows release builds without console window
+PRODUCTION=true wails3 task windows:build
+```
+
+**Development Build (With Console for Debugging):**
+```bash
+# For development builds with console output
+PRODUCTION=false wails3 task windows:build
+# or simply
+wails3 task windows:build
+```
+
+**Manual Build with Go:**
+```bash
+# Production build (no console)
+go build -tags production -ldflags="-H windowsgui" -o lk-gui.exe
+
+# Development build (with console)
+go build -tags console -o lk-gui.exe
+```
+
+Note: The production builds from GitHub Actions automatically include the `-H windowsgui` flag to hide the console window on Windows.
+
 ## CI/CD
 
 This project uses GitHub Actions for automated building and testing:
