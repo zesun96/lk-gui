@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/shirou/gopsutil/v4 v4.25.7
-	github.com/wailsapp/wails/v3 v3.0.0-alpha.25
+	github.com/wailsapp/wails/v3 v3.0.0-alpha.28
 )
 
 require (
