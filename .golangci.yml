@@ -1,5 +1,7 @@
 run:
   timeout: 5m
+  build-tags:
+    - integration
 
 linters-settings:
   gocyclo:
@@ -59,6 +61,8 @@ linters:
     - predeclared  # Check for shadowing of predeclared identifiers
 
 issues:
+  exclude-files:
+    - ".*\\.pb\\.go$"
   exclude-dirs:
     - frontend/bindings
     - vendor
