@@ -1,6 +1,3 @@
-//go:build !console
-// +build !console
-
 package main
 
 import (
