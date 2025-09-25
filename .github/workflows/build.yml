@@ -106,18 +106,36 @@ jobs:
         echo "Building version: $VERSION"
       shell: bash
 
-    - name: Build application
+    - name: Build application (Windows)
+      if: matrix.platform == 'windows'
+      run: |
+        Write-Host "Building for platform: ${{ matrix.platform }}"
+        Write-Host "PRODUCTION environment variable: $env:PRODUCTION"
+        if ($env:PRODUCTION -eq "true") {
+          Write-Host "🚀 Building production release (no console window on Windows)"
+        } else {
+          Write-Host "🔧 Building development version (with console for debugging)"
+        }
+        wails3 task ${{ matrix.platform }}:build
+      shell: pwsh
+      env:
+        # Set PRODUCTION=true for release builds to enable windowsgui flag on Windows
+        PRODUCTION: ${{ startsWith(github.ref, 'refs/tags/') && 'true' || 'false' }}
+
+    - name: Build application (Unix)
+      if: matrix.platform != 'windows'
       run: |
         echo "Building for platform: ${{ matrix.platform }}"
         echo "PRODUCTION environment variable: $PRODUCTION"
         if [ "$PRODUCTION" = "true" ]; then
-          echo "🚀 Building production release (no console window on Windows)"
+          echo "🚀 Building production release"
         else
-          echo "🔧 Building development version (with console for debugging)"
+          echo "🔧 Building development version"
         fi
         wails3 task ${{ matrix.platform }}:build
+      shell: bash
       env:
-        # Set PRODUCTION=true for release builds to enable windowsgui flag on Windows
+        # Set PRODUCTION=true for release builds
         PRODUCTION: ${{ startsWith(github.ref, 'refs/tags/') && 'true' || 'false' }}
 
     - name: List build output
