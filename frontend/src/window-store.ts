@@ -105,6 +105,7 @@ export type WindowState = {
       response: string
       params: Array<{ key: string; value: string; description: string; enabled: boolean }>
       updatedAt: string
+      isExecuting?: boolean
     }
   }
 }
@@ -133,6 +134,7 @@ const getInitialState = (): WindowState => {
         response: '',
         params: [],
         updatedAt: new Date().toISOString(),
+        isExecuting: false,
       },
     },
   }
@@ -157,6 +159,7 @@ export const useWindowStore = createSelectors(
                   response: '',
                   params: [],
                   updatedAt: new Date().toISOString(),
+                  isExecuting: false,
                 }
                 state.sortOrder.unshift(id)
 
@@ -172,6 +175,7 @@ export const useWindowStore = createSelectors(
                   id: newId,
                   title: `Copy of ${state.requests[id].title}`,
                   updatedAt: new Date().toISOString(),
+                  isExecuting: false,
                 }
                 state.sortOrder.splice(index + 1, 0, newId)
               }),
@@ -271,6 +275,13 @@ export const useWindowStore = createSelectors(
             setLkCommandPath: (path: string) =>
               set((state) => {
                 state.lkCommandPath = path
+              }),
+            setRequestExecuting: (requestId: string, isExecuting: boolean) =>
+              set((state) => {
+                if (state.requests[requestId]) {
+                  state.requests[requestId].isExecuting = isExecuting
+                  state.requests[requestId].updatedAt = new Date().toISOString()
+                }
               }),
           }
         }),

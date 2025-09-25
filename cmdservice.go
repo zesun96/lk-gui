@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"runtime"
@@ -14,6 +15,8 @@ type CmdService struct {
 }
 
 func (c *CmdService) Run(cmd string) (string, error) {
+	log.Printf("[CmdService] Received command: %q", cmd)
+	
 	if strings.TrimSpace(cmd) == "" {
 		return "", fmt.Errorf("command cannot be empty")
 	}
@@ -22,6 +25,8 @@ func (c *CmdService) Run(cmd string) (string, error) {
 	if len(args) == 0 {
 		return "", fmt.Errorf("invalid command")
 	}
+
+	log.Printf("[CmdService] Parsed args: %v", args)
 
 	var envVars []string
 	var cmdArgs []string
@@ -38,6 +43,9 @@ func (c *CmdService) Run(cmd string) (string, error) {
 		return "", fmt.Errorf("no command found")
 	}
 
+	log.Printf("[CmdService] Environment variables: %v", envVars)
+	log.Printf("[CmdService] Command arguments: %v", cmdArgs)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
@@ -45,7 +53,11 @@ func (c *CmdService) Run(cmd string) (string, error) {
 
 	execCmd.Env = append(os.Environ(), envVars...)
 
+	log.Printf("[CmdService] Executing command: %s %v", cmdArgs[0], cmdArgs[1:])
 	output, err := execCmd.CombinedOutput()
+	log.Printf("[CmdService] Command output length: %d", len(output))
+	log.Printf("[CmdService] Command output: %q", string(output))
+	log.Printf("[CmdService] Command error: %v", err)
 
 	if err != nil {
 		return string(output), fmt.Errorf("command execution failed: %v", err)

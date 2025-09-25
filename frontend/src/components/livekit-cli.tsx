@@ -3,12 +3,13 @@ import { getErrorMessage } from '@/utils/utils'
 import { useWindowStore } from '@/window-store'
 import Editor, { useMonaco } from '@monaco-editor/react'
 import { WML } from '@wailsio/runtime'
-import { Bug, Play, Square } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { Bug, Play, X } from 'lucide-react'
+import { useEffect, useRef } from 'react'
 import type {
   ImperativePanelHandle,
   PanelOnResize,
 } from 'react-resizable-panels'
+import type { CancellablePromise } from '@wailsio/runtime'
 import ParamsInput from './params-input'
 import SelectMethod from './select-method'
 import {
@@ -39,6 +40,9 @@ import {
 } from './ui/tooltip'
 import { Run } from '../../bindings/changeme/cmdservice'
 
+// Global store for managing ongoing promises per request
+const activePromises = new Map<string, CancellablePromise<string>>()
+
 export default function LivekitCli() {
   const activeRequestId = useWindowStore.use.activeRequestId()
   const requests = useWindowStore.use.requests()
@@ -46,13 +50,27 @@ export default function LivekitCli() {
   const lkCommandPath = useWindowStore.use.lkCommandPath()
   const setTheme = useWindowStore.use.setTheme()
   const updateActiveRequest = useWindowStore.use.updateActiveRequest()
+  const setRequestExecuting = useWindowStore.use.setRequestExecuting()
 
-  const [loading, setLoading] = useState(false)
+  const response = useWindowStore((state) => state.requests[activeRequestId]?.response || '')
+  const method = useWindowStore((state) => state.requests[activeRequestId]?.method || '')
+  const request = useWindowStore((state) => state.requests[activeRequestId]?.request || '')
+  const isExecuting = useWindowStore((state) => state.requests[activeRequestId]?.isExecuting || false)
 
-  const { method, request, response } =
-    requests[activeRequestId]
+
   const setRequest = (request: string) => updateActiveRequest({ request })
-  const setResponse = (response: string) => updateActiveRequest({ response })
+  const setResponse = (response: string) => {
+    console.log('setResponse called with:', response)
+    console.log('activeRequestId:', activeRequestId)
+    console.log('Before update - current response:', requests[activeRequestId]?.response)
+    updateActiveRequest({ response })
+
+    setTimeout(() => {
+      const updatedRequest = useWindowStore.getState().requests[activeRequestId]
+      console.log('After update - new response:', updatedRequest?.response)
+      console.log('Response match:', updatedRequest?.response === response)
+    }, 50)
+  }
 
   const monaco = useMonaco()
 
@@ -63,6 +81,12 @@ export default function LivekitCli() {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
   }, [theme])
+
+  useEffect(() => {
+    console.log('Response changed:', response)
+    console.log('Response length:', response?.length)
+    console.log('Request data:', { method, request, isExecuting })
+  }, [response, method, request, isExecuting])
 
   const sendRequest = async () => {
     if (method.trim().length === 0) {
@@ -75,7 +99,8 @@ export default function LivekitCli() {
       return
     }
 
-    setLoading(true)
+    // Set executing state in store
+    setRequestExecuting(activeRequestId, true)
     setResponse('Executing command...')
 
     try {
@@ -95,16 +120,67 @@ export default function LivekitCli() {
       }
 
       console.log('Executing command:', fullCommand)
+      console.log('lkCommandPath:', lkCommandPath)
+      console.log('Original request:', request)
+      console.log('Environment variables:', enabledEnvVars)
 
-      const result = await Run(fullCommand)
-      setResponse(result || 'Command executed successfully (no output)')
+      const promise = Run(fullCommand)
+      // Store promise in global map
+      activePromises.set(activeRequestId, promise)
+
+      const result = await promise
+      console.log('Command result:', result)
+      console.log('Result type:', typeof result)
+      console.log('Result length:', result?.length)
+
+      if (!result || result.trim() === '') {
+        console.log('Setting empty result message')
+        setResponse('Command executed successfully but returned no output')
+      } else {
+        console.log('Setting result:', result)
+        setResponse(result)
+      }
     } catch (error) {
       console.error('Command execution error:', error)
-      setResponse(`Error: ${getErrorMessage(error)}`)
+      const errorMessage = getErrorMessage(error)
+      console.log('Error message:', errorMessage)
+      if (errorMessage.includes('cancelled') || errorMessage.includes('aborted')) {
+        console.log('Command was cancelled/aborted')
+        setResponse('Command execution was cancelled.')
+      } else {
+        console.log('Command failed with error')
+        setResponse(`Error: ${errorMessage}`)
+      }
     } finally {
-      setLoading(false)
+      console.log('Command execution finished, cleaning up')
+      // Clear executing state and remove promise
+      setRequestExecuting(activeRequestId, false)
+      activePromises.delete(activeRequestId)
     }
   }
+
+  const cancelRequest = () => {
+    const currentPromise = activePromises.get(activeRequestId)
+    if (currentPromise) {
+      console.log('User manually cancelled request')
+      currentPromise.cancel()
+      activePromises.delete(activeRequestId)
+      setRequestExecuting(activeRequestId, false)
+      setResponse('Command execution was cancelled by user.')
+    }
+  }
+
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      // Cancel all active promises for this component
+      for (const [requestId, promise] of activePromises.entries()) {
+        promise.cancel()
+        setRequestExecuting(requestId, false)
+      }
+      activePromises.clear()
+    }
+  }, [])
 
   useEffect(() => {
     WML.Reload()
@@ -137,24 +213,27 @@ export default function LivekitCli() {
 
           <div className="grid grid-cols-[minmax(0,_1fr)_min-content] space-x-2 overflow-hidden flex-shrink-0">
             <SelectMethod />
-            <Button
-              id="send-request"
-              onClick={sendRequest}
-              disabled={loading}
-              className="min-w-[120px]"
-            >
-              {loading ? (
-                <>
-                  <Square size={16} className="mr-2" />
-                  Executing...
-                </>
-              ) : (
-                <>
-                  <Play size={16} className="mr-2" />
-                  Execute
-                </>
-              )}
-            </Button>
+            {isExecuting ? (
+              <Button
+                id="cancel-request"
+                onClick={cancelRequest}
+                variant="destructive"
+                className="min-w-[120px]"
+              >
+                <X size={16} className="mr-2" />
+                Cancel
+              </Button>
+            ) : (
+              <Button
+                id="send-request"
+                onClick={sendRequest}
+                disabled={isExecuting}
+                className="min-w-[120px]"
+              >
+                <Play size={16} className="mr-2" />
+                Execute
+              </Button>
+            )}
           </div>
 
           <Tabs defaultValue="command" className="flex-1 flex flex-col min-h-0">
@@ -298,10 +377,11 @@ export default function LivekitCli() {
             </div>
           </div>
           <Editor
+            key={`response-${activeRequestId}-${response?.length || 0}`}
             className="output-response"
             height="100%"
             language="plaintext"
-            value={response}
+            value={response || ''}
             options={{
               minimap: {
                 enabled: false,
