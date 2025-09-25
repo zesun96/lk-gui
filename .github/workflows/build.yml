@@ -25,9 +25,9 @@ jobs:
             artifact-name: lk-gui-windows-amd64.exe
           - os: macos-latest
             platform: darwin
-            arch: amd64
+            arch: arm64
             extension: ""
-            artifact-name: lk-gui-darwin-amd64
+            artifact-name: lk-gui-darwin-arm64
           - os: ubuntu-latest
             platform: linux
             arch: amd64
@@ -208,7 +208,7 @@ jobs:
       with:
         files: |
           ./artifacts/lk-gui-windows-amd64.exe/lk-gui-windows-amd64.exe
-          ./artifacts/lk-gui-darwin-amd64/lk-gui-darwin-amd64
+          ./artifacts/lk-gui-darwin-arm64/lk-gui-darwin-arm64
           ./artifacts/lk-gui-linux-amd64/lk-gui-linux-amd64
         name: Release ${{ needs.build.outputs.version }}
         tag_name: ${{ github.ref_name }}
